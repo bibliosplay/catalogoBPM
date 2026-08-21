@@ -1,4 +1,3 @@
-import csv
 import os
 import re
 from fastapi import FastAPI, Query
@@ -18,39 +17,42 @@ app.add_middleware(
 RUTA_CSV = "inventario.csv"
 BD_LIBROS = []
 
-def cargar_inventario_real():
+def cargar_inventario_indestructible():
     global BD_LIBROS
     BD_LIBROS = []
     if not os.path.exists(RUTA_CSV):
-        print("⚠️ Archivo inventario.csv no encontrado.")
         return
 
-    # Usamos codificación cp1252/latin1 que es la nativa de Windows (ANSI) para Chile
+    # Leemos línea por línea de forma directa para evitar errores de codificación con caracteres como N°
     with open(RUTA_CSV, mode="r", encoding="latin-1", errors="ignore") as f:
-        lector = csv.reader(f, delimiter=';')
-        try: 
-            next(lector)  # Saltar la cabecera: N° Sistema;Titulo;Autor...
-        except StopIteration: 
-            return
-
-        for fila in lector:
-            # Tu archivo tiene exactamente 6 columnas
-            if len(fila) < 3: 
+        for num_linea, linea in enumerate(f):
+            # Saltar la primera línea (Cabecera) de forma segura
+            if num_linea == 0:
                 continue
-            try:
-                # Limpiar espacios fantasmas generados por los anchos fijos de Aleph
-                titulo_crudo = fila[1].strip()
-                autor_crudo = fila[2].strip()
-                clasificacion = fila[4].strip() if len(fila) > 4 else ""
-                coleccion = fila[5].strip() if len(fila) > 5 else ""
-
-                # 1. Limpieza profunda del Título (quitar barras cruzadas '/' y comillas)
-                titulo = re.sub(r'\s*/\s*.*$', '', titulo_crudo)
-                titulo = titulo.replace('"', '').replace('.', '').strip()
                 
-                # 2. Limpieza del Autor (dar vuelta "Abalo, Milagros" a "Milagros Abalo")
-                autor = autor_crudo.replace('"', '').replace('.', '').strip()
-                autor = re.sub(r',\s*\d{4}-?.*$', '', autor) # Quita años como 1982-
+            # Limpiar saltos de línea y separar estrictamente por punto y coma
+            fila = [col.strip() for col in linea.split(';')]
+            
+            # Tu archivo tiene exactamente entre 5 y 6 columnas (N° Sistema, Titulo, Autor, Código, Clasificación, Colección)
+            if len(fila) < 3:
+                continue
+                
+            try:
+                titulo_crudo = fila[1]
+                autor_crudo = fila[2]
+                clasificacion = fila[4] if len(fila) > 4 else ""
+                coleccion = fila[5] if len(fila) > 5 else ""
+
+                # Si la fila está vacía en los campos clave, la saltamos
+                if not titulo_crudo and not autor_crudo:
+                    continue
+
+                # 1. Limpieza del Título
+                titulo = re.sub(r'\s*/\s*.*$', '', titulo_crudo).replace('"', '').strip()
+                
+                # 2. Limpieza del Autor
+                autor = autor_crudo.replace('"', '').strip()
+                autor = re.sub(r',\s*\d{4}-?.*$', '', autor)  # Quitar años como 1982-
                 autor = re.sub(r'\s+(autor|autora|ilustradora|editora|compilador).*$', '', autor, flags=re.IGNORECASE)
                 
                 autor_mostrar = autor
@@ -60,15 +62,15 @@ def cargar_inventario_real():
                         autor_mostrar = f"{partes[1].strip()} {partes[0].strip()}"
                 
                 if not autor_mostrar or autor_mostrar.lower() == "autor no registrado":
-                    autor_mostrar = "Autor Institucional / Desconocido"
+                    autor_mostrar = "Autor de la obra"
 
-                # 3. Rescatar el Año analizando los códigos de la estantería
+                # 3. Rescatar el Año
                 año = "S/A"
                 buscar_año = re.findall(r'\b(19\d{2}|20\d{2})\b', titulo_crudo + " " + clasificacion)
-                if buscar_año: 
+                if buscar_año:
                     año = buscar_año[-1]
 
-                # 4. Asignar sección humana basada en el código de colección (ej: LITCH)
+                # 4. Clasificación amable de la sección
                 ubicacion = "Estante General"
                 seccion_cod = coleccion.upper() if coleccion else clasificacion.upper()
                 if "LITCH" in seccion_cod or "CH" in seccion_cod:
@@ -85,11 +87,11 @@ def cargar_inventario_real():
                     "ubicacion": f"BP. Talca - {ubicacion}",
                     "formato": "Libro Físico"
                 })
-            except Exception: 
+            except Exception:
                 continue
-    print(f"✅ ¡Éxito total! {len(BD_LIBROS)} libros reales en línea.")
+    print(f"✅ ¡Éxito total en la nube! {len(BD_LIBROS)} libros reales cargados.")
 
-cargar_inventario_real()
+cargar_inventario_indestructible()
 
 @app.get("/api/buscar")
 def buscar_libros(q: str = Query(..., description="Texto a buscar")):
