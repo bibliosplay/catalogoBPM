@@ -32,8 +32,9 @@ def cargar_inventario_nube():
         for fila in lector:
             if len(fila) < 3: continue
             try:
-                titulo_crudo = fila[1]
-                autor_crudo = fila[2]
+                # CORRECCIÓN TÉCNICA: Posicionamiento por índice de lista []
+                titulo_crudo = fila[1] if len(fila) > 1 else ""
+                autor_crudo = fila[2] if len(fila) > 2 else ""
                 clasificacion = fila[4] if len(fila) > 4 else ""
 
                 titulo = re.sub(r'\s*/\s*.*$', '', titulo_crudo).replace('"', '').strip()
@@ -56,7 +57,7 @@ def cargar_inventario_nube():
                 BD_LIBROS.append({
                     "titulo": titulo,
                     "autor": autor_mostrar,
-                    "autor_norm": autor.lower(),
+                    "autor_norm": autor_mostrar.lower(),
                     "titulo_norm": titulo.lower(),
                     "año": año,
                     "ubicacion": "Biblioteca Pública de Talca",
@@ -86,6 +87,5 @@ def buscar_libros(q: str = Query(..., description="Texto a buscar")):
 
 @app.get("/", response_class=HTMLResponse)
 def entregar_interfaz():
-    # Carga de forma segura el archivo HTML independiente desde la raíz del servidor
     with open("index.html", mode="r", encoding="utf-8") as f:
         return f.read()
