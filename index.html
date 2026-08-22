@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Buscador · Biblioteca Nacional</title>
+<title>Buscador · Biblioteca Pública del Maule</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -215,8 +215,10 @@
   const footerNote = document.getElementById('footerNote');
 
   function buildLink(id){
-    return `http://www.bncatalogo.cl/F/?func=item-global&doc_library=SBP01&doc_number=${id}&sub_library=7336`;
-  }
+  // ALEPH necesita el doc_number relleno a 9 dígitos con ceros a la izquierda
+  const paddedId = String(id).padStart(9, '0');
+  return `http://www.bncatalogo.cl/F/?func=item-global&doc_library=SBP01&doc_number=${paddedId}&sub_library=7336`;
+}
 
   function escapeHtml(text){
     const div = document.createElement('div');
