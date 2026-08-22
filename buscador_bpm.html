@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador Biblioteca Nacional de Chile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            padding: 35px 40px 45px;
+        }
+
+        h1 {
+            color: #003366;
+            font-size: 28px;
+            border-left: 6px solid #b31b1b;
+            padding-left: 18px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #555;
+            margin-left: 24px;
+            margin-bottom: 28px;
+            font-size: 15px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            background: #f8f9fc;
+            padding: 20px 24px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        #searchInput {
+            flex: 1;
+            min-width: 250px;
+            padding: 14px 20px;
+            border: 2px solid #d0d7e2;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: 0.3s;
+            background: white;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: #003366;
+            box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.2);
+        }
+
+        .stats {
+            color: #2c3e50;
+            font-weight: 500;
+            padding: 10px 0 0 0;
+            font-size: 15px;
+        }
+
+        .stats span {
+            background: #003366;
+            color: white;
+            padding: 2px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+        }
+
+        thead {
+            background: #003366;
+            color: white;
+        }
+
+        th {
+            padding: 16px 18px;
+            text-align: left;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        td {
+            padding: 14px 18px;
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background-color: #f8faff;
+        }
+
+        .btn-link {
+            display: inline-block;
+            background: #b31b1b;
+            color: white;
+            padding: 8px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-link:hover {
+            background: #8a1414;
+            transform: scale(1.02);
+            box-shadow: 0 2px 8px rgba(179, 27, 27, 0.3);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 50px 0;
+            color: #888;
+            font-size: 18px;
+        }
+
+        .id-col {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #555;
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                padding: 20px 15px;
+            }
+            th, td {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+            .search-box {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📚 Buscador de Colecciones</h1>
+    <p class="subtitle">Biblioteca Nacional de Chile — Consulta por autor, título o ID</p>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Escribe un autor, título o número de ID..." autofocus>
+        <span class="stats">Resultados: <span id="resultCount">0</span></span>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:28%">Autor</th>
+                    <th style="width:40%">Título</th>
+                    <th style="width:17%">ID</th>
+                    <th style="width:15%; text-align:center;">Ver en catálogo</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Los datos se cargarán aquí -->
+            </tbody>
+        </table>
+    </div>
+    <div id="noResults" class="no-results" style="display:none;">No se encontraron resultados</div>
+</div>
+
+<script>
+    // -------------------- CONFIGURACIÓN --------------------
+    const CSV_URL = 'datos.csv';  // <-- CAMBIA AQUÍ SI TU ARCHIVO SE LLAMA DIFERENTE
+    // -------------------------------------------------------
+
+    let allData = [];
+
+    // Función para generar el enlace al catálogo
+    function buildLink(id) {
+        return `http://www.bncatalogo.cl/F/?func=item-global&doc_library=SBP01&doc_number=${id}&sub_library=7336`;
+    }
+
+    // Cargar y procesar el CSV
+    async function loadCSV() {
+        try {
+            const response = await fetch(CSV_URL);
+            if (!response.ok) throw new Error('No se pudo cargar el archivo CSV');
+            const csvText = await response.text();
+            
+            // Convertir CSV a array de objetos
+            const lines = csvText.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            
+            // Mapear índices de columnas
+            const idxAutor = headers.indexOf('autor');
+            const idxTitulo = headers.indexOf('titulo');
+            const idxId = headers.indexOf('id');
+            
+            if (idxAutor === -1 || idxTitulo === -1 || idxId === -1) {
+                throw new Error('El CSV debe tener columnas: autor, titulo, id');
+            }
+
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(',').map(c => c.trim());
+                if (cols.length > Math.max(idxAutor, idxTitulo, idxId)) {
+                    allData.push({
+                        autor: cols[idxAutor],
+                        titulo: cols[idxTitulo],
+                        id: cols[idxId]
+                    });
+                }
+            }
+
+            // Mostrar todos los datos inicialmente
+            renderTable(allData);
+        } catch (error) {
+            document.getElementById('tableBody').innerHTML = 
+                `<tr><td colspan="4" style="text-align:center;color:#b31b1b;padding:40px;">
+                    ⚠️ Error al cargar datos: ${error.message}.<br>
+                    Asegúrate que el archivo <strong>datos.csv</strong> esté en la misma carpeta.
+                </td></tr>`;
+            console.error(error);
+        }
+    }
+
+    // Renderizar tabla con un array de datos
+    function renderTable(data) {
+        const tbody = document.getElementById('tableBody');
+        const noResults = document.getElementById('noResults');
+        const countSpan = document.getElementById('resultCount');
+
+        if (data.length === 0) {
+            tbody.innerHTML = '';
+            noResults.style.display = 'block';
+            countSpan.textContent = '0';
+            return;
+        }
+
+        noResults.style.display = 'none';
+        countSpan.textContent = data.length;
+
+        let html = '';
+        data.forEach(item => {
+            const link = buildLink(item.id);
+            html += `
+                <tr>
+                    <td><strong>${escapeHtml(item.autor)}</strong></td>
+                    <td>${escapeHtml(item.titulo)}</td>
+                    <td class="id-col">${escapeHtml(item.id)}</td>
+                    <td style="text-align:center;">
+                        <a href="${link}" target="_blank" class="btn-link">🔗 Ver</a>
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    }
+
+    // Función para escapar caracteres HTML y evitar inyección
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Filtro de búsqueda (en tiempo real)
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const query = e.target.value.trim().toLowerCase();
+        
+        if (query === '') {
+            renderTable(allData);
+            return;
+        }
+
+        const filtered = allData.filter(item => {
+            return item.autor.toLowerCase().includes(query) ||
+                   item.titulo.toLowerCase().includes(query) ||
+                   item.id.includes(query); // ID es exacto, pero incluimos búsqueda parcial
+        });
+        renderTable(filtered);
+    });
+
+    // Iniciar carga
+    loadCSV();
+</script>
+
+</body>
+</html>
