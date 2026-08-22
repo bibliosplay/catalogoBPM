@@ -201,9 +201,10 @@
 
     let allData = [];
 
- // Función para generar el enlace al catálogo
+// Función para generar el enlace al catálogo
 function buildLink(id) {
-    return `http://www.bncatalogo.cl/F/?func=item-global&doc_library=SBP01&doc_number=${id}&sub_library=7336`;
+    // Este enlace realiza una búsqueda por el ID, creando una sesión
+    return `http://www.bncatalogo.cl/F/?func=find-b&local_base=SBP01&find_code=WRD&request=${id}`;
 }
 
     // Cargar y procesar el CSV
