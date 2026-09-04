@@ -566,7 +566,6 @@
           <div class="featured-rating">
             <span class="stars">${renderStars(book.rating)}</span>
             <b>${book.rating.toFixed(1)}</b>
-            <span>(${book.resenas.toLocaleString('es-CL')} reseñas)</span>
           </div>
           <p class="featured-desc">${escapeHtmlComment(book.descripcion)}</p>
           <div class="featured-tags">
@@ -672,7 +671,7 @@
   }
 
   function showPrompt(){
-    resultsEl.innerHTML = '<div class="prompt">Escribe un título, autor o ID para empezar a buscar.</div>';
+    resultsEl.innerHTML = '';
     metaEl.innerHTML = '';
     loadMoreBtn.style.display = 'none';
   }
