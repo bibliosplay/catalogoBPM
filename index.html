@@ -243,6 +243,140 @@
   }
   .comment-status.error{ color: var(--stamp-red); }
 
+  /* -------- Libro del mes -------- */
+  .featured{
+    padding: 18px 18px 4px;
+  }
+  .featured-eyebrow{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--stamp-red);
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 4px;
+  }
+  .featured-eyebrow::before{ content:""; width:7px; height:7px; border-radius:50%; background: var(--stamp-red); }
+  .featured-title{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 21px;
+    margin: 0 0 2px 0;
+    letter-spacing: -0.01em;
+  }
+  .featured-subtitle{
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 14px 0;
+  }
+  .featured-card{
+    position: relative;
+    display: flex;
+    gap: 16px;
+    background: var(--paper-raised);
+    border: 1.5px solid var(--ink);
+    border-radius: var(--radius);
+    padding: 18px;
+    overflow: hidden;
+  }
+  .featured-card::before{
+    content: "";
+    position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+    background: repeating-linear-gradient(to bottom, var(--stamp-red) 0px, var(--stamp-red) 5px, transparent 5px, transparent 10px);
+  }
+  .featured-cover{
+    flex-shrink: 0;
+    width: 88px;
+    height: 132px;
+    border-radius: 6px;
+    background: linear-gradient(160deg, var(--stamp-red), #7A2A20);
+    color: var(--paper-raised);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px 8px;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 12.5px;
+    line-height: 1.25;
+    box-shadow: 0 4px 10px rgba(28,36,48,0.18);
+  }
+  .featured-info{ min-width: 0; flex: 1; }
+  .featured-book-title{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 17.5px;
+    line-height: 1.28;
+    margin: 0 0 3px 0;
+  }
+  .featured-book-author{
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 8px 0;
+  }
+  .featured-rating{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+  .featured-rating .stars{ color: var(--stamp-red); letter-spacing: 1px; font-size: 13px; }
+  .featured-rating b{ color: var(--ink); }
+  .featured-desc{
+    font-size: 13.5px;
+    color: var(--ink);
+    line-height: 1.5;
+    margin: 0 0 12px 0;
+  }
+  .featured-tags{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .featured-tag{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.02em;
+    color: var(--green);
+    background: var(--green-soft);
+    border-radius: 20px;
+    padding: 4px 10px;
+    white-space: nowrap;
+  }
+  .featured-actions{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .featured-btn{
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 9px 15px;
+    cursor: pointer;
+    border: none;
+  }
+  .featured-btn.primary{
+    color: var(--paper-raised);
+    background: var(--stamp-red);
+  }
+  .featured-btn.secondary{
+    color: var(--ink);
+    background: transparent;
+    border: 1.5px solid var(--line);
+  }
+  .featured-btn:active{ transform: scale(0.97); }
+
+  @media (max-width: 360px){
+    .featured-card{ flex-direction: column; }
+    .featured-cover{ width: 100%; height: 96px; }
+  }
+
   .comment-list{
     display: flex;
     flex-direction: column;
@@ -286,6 +420,8 @@
       <input type="text" id="searchInput" placeholder="Título, autor o ID…" autofocus>
     </div>
   </header>
+
+  <div class="featured" id="featuredBook"></div>
 
   <div class="result-meta" id="resultMeta"></div>
   <div class="results" id="results"></div>
@@ -384,6 +520,72 @@
   });
 
   loadComments();
+</script>
+
+<script>
+  // -------------------- LIBRO DEL MES --------------------
+  // Edita este objeto para cambiar la selección de cada mes.
+  const featuredBook = {
+    titulo: 'Diario de Japón',
+    autor: 'María José Ferrada',
+    rating: 3.97,
+    resenas: 382,
+    descripcion: 'Un libro híbrido entre diario de viajes, ensayo y crónica: Ferrada entreteje sus propios viajes a Tokio con una investigación sobre el Genji Monogatari y Murasaki Shikibu, la primera novelista de la historia, además de reflexiones sobre la escritura, la memoria familiar y su infancia en el sur de Chile. Reconocido en 2026 con el Premio Manuel Montt de la Universidad de Chile.',
+    tags: ['Ensayo autobiográfico', 'Crónica de viaje', 'Literatura chilena', 'Premio Manuel Montt 2025']
+  };
+  // ---------------------------------------------------------
+
+  function renderStars(rating){
+    const full = Math.round(rating);
+    return '★'.repeat(full) + '☆'.repeat(5 - full);
+  }
+
+  function renderFeaturedBook(book){
+    const el = document.getElementById('featuredBook');
+    if(!el || !book) return;
+
+    el.innerHTML = `
+      <div class="featured-eyebrow">Libro del mes</div>
+      <p class="featured-title">Selección especial · Septiembre</p>
+      <p class="featured-subtitle">Recomendado por el equipo de la Biblioteca Pública del Maule</p>
+      <div class="featured-card">
+        <div class="featured-cover">${escapeHtmlComment(book.titulo)}</div>
+        <div class="featured-info">
+          <p class="featured-book-title">${escapeHtmlComment(book.titulo)}</p>
+          <p class="featured-book-author">por ${escapeHtmlComment(book.autor)}</p>
+          <div class="featured-rating">
+            <span class="stars">${renderStars(book.rating)}</span>
+            <b>${book.rating.toFixed(1)}</b>
+            <span>(${book.resenas.toLocaleString('es-CL')} reseñas)</span>
+          </div>
+          <p class="featured-desc">${escapeHtmlComment(book.descripcion)}</p>
+          <div class="featured-tags">
+            ${book.tags.map(t => `<span class="featured-tag">${escapeHtmlComment(t)}</span>`).join('')}
+          </div>
+          <div class="featured-actions">
+            <button type="button" class="featured-btn primary" id="featuredWantBtn">＋ Quiero leerlo</button>
+            <button type="button" class="featured-btn secondary" id="featuredReviewBtn">✎ Escribir reseña</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('featuredWantBtn').addEventListener('click', () => {
+      const searchInput = document.getElementById('searchInput');
+      searchInput.value = book.titulo;
+      searchInput.dispatchEvent(new Event('input'));
+      document.getElementById('resultMeta').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    document.getElementById('featuredReviewBtn').addEventListener('click', () => {
+      const libroInput = document.getElementById('commentLibro');
+      libroInput.value = book.titulo;
+      document.getElementById('commentForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('commentTexto').focus();
+    });
+  }
+
+  renderFeaturedBook(featuredBook);
 </script>
 
 
