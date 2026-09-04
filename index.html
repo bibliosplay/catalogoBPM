@@ -301,6 +301,13 @@
     font-size: 12.5px;
     line-height: 1.25;
     box-shadow: 0 4px 10px rgba(28,36,48,0.18);
+    overflow: hidden;
+  }
+  .featured-cover img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
   }
   .featured-info{ min-width: 0; flex: 1; }
   .featured-book-title{
@@ -531,7 +538,8 @@
     rating: 3.97,
     resenas: 382,
     descripcion: 'Un libro híbrido entre diario de viajes, ensayo y crónica: Ferrada entreteje sus propios viajes a Tokio con una investigación sobre el Genji Monogatari y Murasaki Shikibu, la primera novelista de la historia, además de reflexiones sobre la escritura, la memoria familiar y su infancia en el sur de Chile. Reconocido en 2026 con el Premio Manuel Montt de la Universidad de Chile.',
-    tags: ['Ensayo autobiográfico', 'Crónica de viaje', 'Literatura chilena', 'Premio Manuel Montt 2025']
+    tags: ['Ensayo autobiográfico', 'Crónica de viaje', 'Literatura chilena', 'Premio Manuel Montt 2025'],
+    portada: 'portada-libro-mes.jpg' // nombre del archivo de imagen subido junto a index.html. Déjalo en '' para usar la caja de color con el título.
   };
   // ---------------------------------------------------------
 
@@ -549,7 +557,9 @@
       <p class="featured-title">Selección especial · Septiembre</p>
       <p class="featured-subtitle">Recomendado por el equipo de la Biblioteca Pública del Maule</p>
       <div class="featured-card">
-        <div class="featured-cover">${escapeHtmlComment(book.titulo)}</div>
+        <div class="featured-cover">${book.portada
+          ? `<img src="${escapeHtmlComment(book.portada)}" alt="Portada de ${escapeHtmlComment(book.titulo)}">`
+          : escapeHtmlComment(book.titulo)}</div>
         <div class="featured-info">
           <p class="featured-book-title">${escapeHtmlComment(book.titulo)}</p>
           <p class="featured-book-author">por ${escapeHtmlComment(book.autor)}</p>
