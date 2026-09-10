@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Buscador · Biblioteca Pública del Maule</title>
+<meta name="description" content="Busca libros del catálogo de la Biblioteca Pública del Maule por título, autor o ID, desde el celular, sin depender del catálogo ALEPH.">
+<meta name="theme-color" content="#EDE6D6">
+<meta property="og:title" content="Buscador · Biblioteca Pública del Maule">
+<meta property="og:description" content="Búsqueda rápida y amigable en el catálogo de la Biblioteca Pública del Maule.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%2333513F'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='%23EDE6D6'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -75,6 +81,38 @@
     font-size: 16px; color: var(--ink); width: 100%;
   }
   .search-box input::placeholder{ color: var(--ink-soft); }
+  .search-clear{
+    flex-shrink: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: none;
+    background: var(--line);
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+  }
+  .search-clear.visible{ display: flex; }
+
+  .sr-only{
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .honeypot-field{
+    position: absolute !important;
+    left: -9999px !important;
+    width: 1px; height: 1px;
+    overflow: hidden;
+  }
 
   .result-meta{
     padding: 14px 18px 4px;
@@ -503,14 +541,15 @@
     <h1>Buscar en el catálogo<br>Biblioteca Pública del Maule</h1>
     <div class="search-box">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      <input type="text" id="searchInput" placeholder="Título, autor o ID…" autofocus>
+      <input type="text" id="searchInput" placeholder="Título, autor o ID…" autofocus aria-label="Buscar por título, autor o ID">
+      <button type="button" class="search-clear" id="searchClear" aria-label="Borrar búsqueda">✕</button>
     </div>
   </header>
 
   <div class="featured" id="featuredBook"></div>
 
-  <div class="result-meta" id="resultMeta"></div>
-  <div class="results" id="results"></div>
+  <div class="result-meta" id="resultMeta" aria-live="polite"></div>
+  <div class="results" id="results" aria-live="polite"></div>
   <button class="load-more" id="loadMore" style="display:none;">Mostrar más resultados</button>
 
   <div class="comments-section">
@@ -519,6 +558,10 @@
     <p class="comments-subtitle">Deja tu comentario o recomienda un libro a otros usuarios de la biblioteca. Tu comentario se publicará después de ser revisado.</p>
 
     <form class="comment-form" id="commentForm">
+      <div class="honeypot-field" aria-hidden="true">
+        <label for="commentWebsite">Deja este campo vacío</label>
+        <input type="text" id="commentWebsite" name="website" tabindex="-1" autocomplete="off">
+      </div>
       <input type="text" id="commentNombre" placeholder="Tu nombre" required maxlength="60">
       <input type="text" id="commentLibro" placeholder="Libro que recomiendas (opcional)" maxlength="120">
       <textarea id="commentTexto" placeholder="Tu comentario o recomendación…" required maxlength="500"></textarea>
@@ -533,6 +576,15 @@
 </div>
 
 <script>
+  // -------------------- UTILIDAD COMPARTIDA --------------------
+  // Usada por los tres módulos (comentarios, carrusel y buscador)
+  // para evitar inyección de HTML desde datos externos (CSV / Supabase).
+  function escapeHtml(text){
+    const div = document.createElement('div');
+    div.textContent = text || '';
+    return div.innerHTML;
+  }
+
   // -------------------- CONFIGURACIÓN SUPABASE --------------------
   const SUPABASE_URL = 'https://mzspglxyneteoookmdqu.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_0MjZX8MyCocw7T4J6tnvmQ_aH3MJGXB';
@@ -544,12 +596,6 @@
   const commentStatus = document.getElementById('commentStatus');
   const commentSubmitBtn = document.getElementById('commentSubmitBtn');
   const commentListEl = document.getElementById('commentList');
-
-  function escapeHtmlComment(text){
-    const div = document.createElement('div');
-    div.textContent = text || '';
-    return div.innerHTML;
-  }
 
   async function loadComments(){
     const { data, error } = await supabaseClient
@@ -571,15 +617,26 @@
 
     commentListEl.innerHTML = data.map(c => `
       <div class="comment-card">
-        <div class="who">${escapeHtmlComment(c.nombre)}</div>
-        ${c.libro ? `<p class="book">${escapeHtmlComment(c.libro)}</p>` : ''}
-        <p class="text">${escapeHtmlComment(c.comentario)}</p>
+        <div class="who">${escapeHtml(c.nombre)}</div>
+        ${c.libro ? `<p class="book">${escapeHtml(c.libro)}</p>` : ''}
+        <p class="text">${escapeHtml(c.comentario)}</p>
       </div>
     `).join('');
   }
 
   commentForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    // Honeypot: los bots suelen rellenar todos los campos, incluido este,
+    // que está oculto para personas. Si viene con contenido, se ignora en
+    // silencio (evita darle pistas a los bots de que fue detectado).
+    const honeypot = document.getElementById('commentWebsite').value.trim();
+    if(honeypot){
+      commentForm.reset();
+      commentStatus.textContent = '¡Gracias! Tu comentario será revisado antes de publicarse.';
+      return;
+    }
+
     commentSubmitBtn.disabled = true;
     commentStatus.textContent = 'Enviando…';
     commentStatus.classList.remove('error');
@@ -676,18 +733,18 @@
         <div class="carousel-slide-inner">
           <div class="week-label">Semana ${book.semana} de ${featuredBooks.length}</div>
           <div class="featured-cover-big">${book.portada
-            ? `<img src="${escapeHtmlComment(book.portada)}" alt="Portada de ${escapeHtmlComment(book.titulo)}">`
-            : escapeHtmlComment(book.titulo)}</div>
+            ? `<img src="${escapeHtml(book.portada)}" alt="Portada de ${escapeHtml(book.titulo)}">`
+            : escapeHtml(book.titulo)}</div>
           <div class="featured-info">
-            <p class="featured-book-title">${escapeHtmlComment(book.titulo)}</p>
-            <p class="featured-book-author">por ${escapeHtmlComment(book.autor)}</p>
+            <p class="featured-book-title">${escapeHtml(book.titulo)}</p>
+            <p class="featured-book-author">por ${escapeHtml(book.autor)}</p>
             <div class="featured-rating">
               <span class="stars">${renderStars(book.rating)}</span>
               <b>${book.rating.toFixed(1)}</b>
             </div>
-            <p class="featured-desc">${escapeHtmlComment(book.descripcion)}</p>
+            <p class="featured-desc">${escapeHtml(book.descripcion)}</p>
             <div class="featured-tags">
-              ${book.tags.map(t => `<span class="featured-tag">${escapeHtmlComment(t)}</span>`).join('')}
+              ${book.tags.map(t => `<span class="featured-tag">${escapeHtml(t)}</span>`).join('')}
             </div>
             <div class="featured-actions">
               <button type="button" class="featured-btn primary" data-action="want" data-index="${index}">＋ Quiero leerlo</button>
@@ -810,21 +867,30 @@
   const footerNote = document.getElementById('footerNote');
 
   function buildLink(id){
-    // ALEPH necesita el doc_number relleno a 9 dígitos con ceros a la izquierda
-    const paddedId = String(id).padStart(9, '0');
+    // ALEPH necesita el doc_number relleno a 9 dígitos con ceros a la izquierda.
+    // Si el ID no es puramente numérico (dato inesperado en el CSV), evitamos
+    // generar un enlace incorrecto y mandamos al buscador general del catálogo.
+    const idStr = String(id).trim();
+    if(!/^\d+$/.test(idStr)){
+      return 'http://www.bncatalogo.cl/';
+    }
+    const paddedId = idStr.padStart(9, '0');
     return `http://www.bncatalogo.cl/F/?func=item-global&doc_library=SBP01&doc_number=${paddedId}&sub_library=7336`;
   }
 
-  function escapeHtml(text){
-    const div = document.createElement('div');
-    div.textContent = text || '';
-    return div.innerHTML;
+  // Quita tildes/diéresis manteniendo el largo del texto (mapeo 1 a 1),
+  // así los índices siguen siendo válidos para resaltar coincidencias.
+  // Permite que buscar "nunez" encuentre "Núñez" y "meson" encuentre "mesón".
+  const ACCENT_MAP = { 'á':'a','é':'e','í':'i','ó':'o','ú':'u','ü':'u','ñ':'n',
+                       'Á':'A','É':'E','Í':'I','Ó':'O','Ú':'U','Ü':'U','Ñ':'N' };
+  function foldAccents(text){
+    return String(text).replace(/[áéíóúüñÁÉÍÓÚÜÑ]/g, ch => ACCENT_MAP[ch]);
   }
 
   function highlight(text, query){
     const safe = escapeHtml(text);
     if(!query) return safe;
-    const idx = safe.toLowerCase().indexOf(query.toLowerCase());
+    const idx = foldAccents(safe).toLowerCase().indexOf(foldAccents(query).toLowerCase());
     if(idx === -1) return safe;
     return safe.slice(0, idx) + '<mark>' + safe.slice(idx, idx + query.length) + '</mark>' + safe.slice(idx + query.length);
   }
@@ -899,22 +965,32 @@
       showPrompt();
       return;
     }
-    const q = query.toLowerCase();
+    const q = foldAccents(query).toLowerCase();
     currentFiltered = allData.filter(item =>
-      item.autor.toLowerCase().includes(q) ||
-      item.titulo.toLowerCase().includes(q) ||
+      foldAccents(item.autor).toLowerCase().includes(q) ||
+      foldAccents(item.titulo).toLowerCase().includes(q) ||
       item.id.includes(query)
     );
     shown = Math.min(PAGE_SIZE, currentFiltered.length);
-    metaEl.innerHTML = `<b>${currentFiltered.length.toLocaleString('es-CL')}</b> ${currentFiltered.length === 1 ? 'resultado' : 'resultados'} encontrados`;
+    metaEl.innerHTML = `<b>${currentFiltered.length.toLocaleString('es-CL')}</b> ${currentFiltered.length === 1 ? 'resultado encontrado' : 'resultados encontrados'}`;
     renderPage(query);
   }
 
+  const clearBtn = document.getElementById('searchClear');
+
   let debounceTimer;
   input.addEventListener('input', (e) => {
+    clearBtn.classList.toggle('visible', e.target.value.length > 0);
     clearTimeout(debounceTimer);
     const query = e.target.value.trim();
     debounceTimer = setTimeout(() => runSearch(query), 180);
+  });
+
+  clearBtn.addEventListener('click', () => {
+    input.value = '';
+    clearBtn.classList.remove('visible');
+    input.focus();
+    runSearch('');
   });
 
   loadMoreBtn.addEventListener('click', () => {
