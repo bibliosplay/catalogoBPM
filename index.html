@@ -35,11 +35,28 @@
     font-family: 'IBM Plex Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
   }
+  @media (min-width: 620px){
+    body{
+      background: linear-gradient(180deg, #E1D7BC 0%, var(--paper) 320px);
+      min-height: 100vh;
+    }
+  }
   .frame{
     max-width: 460px;
     margin: 0 auto;
     min-height: 100vh;
     padding-bottom: 40px;
+  }
+  @media (min-width: 620px){
+    .frame{
+      margin: 28px auto 40px;
+      min-height: auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 0 0 20px 20px;
+      box-shadow: 0 24px 60px rgba(28,36,48,0.16);
+    }
+    .frame > footer:last-child{ border-radius: 0 0 20px 20px; padding-bottom: 22px; }
   }
   header{
     padding: 22px 18px 16px;
@@ -319,8 +336,9 @@
     transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .carousel-slide{
-    min-width: 100%;
-    flex-shrink: 0;
+    flex: 0 0 100%;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .carousel-slide-inner{
@@ -441,14 +459,22 @@
   }
   .featured-btn:active{ transform: scale(0.97); }
 
-  /* Flechas laterales superpuestas */
+  /* Flechas de navegación del carrusel: en una fila fija junto a los puntos,
+     nunca superpuestas sobre el contenido (evita que tapen el título en
+     libros con texto más largo). */
+  .carousel-nav-row{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 14px;
+  }
   .carousel-arrow{
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 3;
-    width: 40px;
-    height: 40px;
+    position: static;
+    z-index: 1;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     border: 1.5px solid var(--line);
     background: var(--paper-raised);
@@ -465,17 +491,15 @@
     background: var(--ink);
     color: var(--paper-raised);
   }
-  .carousel-arrow:active{ transform: translateY(-50%) scale(0.94); }
-  .carousel-arrow svg{ width: 18px; height: 18px; }
-  .carousel-arrow.prev{ left: 8px; }
-  .carousel-arrow.next{ right: 8px; }
+  .carousel-arrow:active{ transform: scale(0.94); }
+  .carousel-arrow svg{ width: 16px; height: 16px; }
 
   /* Puntos indicadores */
   .carousel-dots{
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 8px;
-    margin-top: 14px;
   }
   .carousel-dot{
     width: 8px;
@@ -496,9 +520,7 @@
   @media (max-width: 360px){
     .carousel-slide-inner{ padding: 14px 14px 18px; }
     .featured-cover-big{ width: 148px; height: 212px; }
-    .carousel-arrow{ width: 34px; height: 34px; }
-    .carousel-arrow.prev{ left: 4px; }
-    .carousel-arrow.next{ right: 4px; }
+    .carousel-arrow{ width: 32px; height: 32px; }
   }
 
   .comment-list{
@@ -764,17 +786,19 @@
       <p class="featured-title">Selección especial · ${currentMonthName}</p>
       <p class="featured-subtitle">Recomendado por el equipo de la Biblioteca Pública del Maule</p>
       <div class="carousel-wrap">
-        <button class="carousel-arrow prev" id="prevBtn" aria-label="Anterior">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
         <div class="carousel-track" id="carouselTrack">
           ${slidesHTML}
         </div>
-        <button class="carousel-arrow next" id="nextBtn" aria-label="Siguiente">
+      </div>
+      <div class="carousel-nav-row">
+        <button class="carousel-arrow prev" id="prevBtn" aria-label="Libro anterior">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="carousel-dots">${dotsHTML}</div>
+        <button class="carousel-arrow next" id="nextBtn" aria-label="Siguiente libro">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
         </button>
       </div>
-      <div class="carousel-dots">${dotsHTML}</div>
     `;
 
     // Event listeners para navegación
