@@ -243,7 +243,7 @@
   }
   .comment-status.error{ color: var(--stamp-red); }
 
-  /* -------- Libro del mes -------- */
+  /* -------- Libros del Mes - Carrusel -------- */
   .featured{
     padding: 18px 18px 4px;
   }
@@ -269,6 +269,22 @@
     color: var(--ink-soft);
     margin: 0 0 14px 0;
   }
+
+  /* Carrusel */
+  .carousel-container{
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+  }
+  .carousel-track{
+    display: flex;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .carousel-slide{
+    min-width: 100%;
+    flex-shrink: 0;
+  }
+
   .featured-card{
     position: relative;
     display: flex;
@@ -378,6 +394,64 @@
     border: 1.5px solid var(--line);
   }
   .featured-btn:active{ transform: scale(0.97); }
+
+  /* Controles del carrusel */
+  .carousel-nav{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .carousel-btn{
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--line);
+    background: var(--paper-raised);
+    color: var(--ink);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .carousel-btn:hover{
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--paper-raised);
+  }
+  .carousel-btn:active{ transform: scale(0.95); }
+  .carousel-btn svg{ width: 16px; height: 16px; }
+
+  .carousel-dots{
+    display: flex;
+    gap: 8px;
+  }
+  .carousel-dot{
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--line);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    padding: 0;
+  }
+  .carousel-dot.active{
+    background: var(--stamp-red);
+    width: 24px;
+    border-radius: 4px;
+  }
+
+  .week-label{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--stamp-red);
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
 
   @media (max-width: 360px){
     .featured-card{ flex-direction: column; }
@@ -530,71 +604,189 @@
 </script>
 
 <script>
-  // -------------------- LIBRO DEL MES --------------------
-  // Edita este objeto para cambiar la selección de cada mes.
-  const featuredBook = {
-    titulo: 'Diario de Japón',
-    autor: 'María José Ferrada',
-    rating: 3.97,
-    resenas: 382,
-    descripcion: 'Un libro híbrido entre diario de viajes, ensayo y crónica: Ferrada entreteje sus propios viajes a Tokio con una investigación sobre el Genji Monogatari y Murasaki Shikibu, la primera novelista de la historia, además de reflexiones sobre la escritura, la memoria familiar y su infancia en el sur de Chile. Reconocido en 2026 con el Premio Manuel Montt de la Universidad de Chile.',
-    tags: ['Ensayo autobiográfico', 'Crónica de viaje', 'Literatura chilena', 'Premio Manuel Montt 2025'],
-    portada: 'portada-libro-mes.jpg' // nombre del archivo de imagen subido junto a index.html. Déjalo en '' para usar la caja de color con el título.
-  };
-  // ---------------------------------------------------------
+  // -------------------- LIBROS DEL MES - CARRUSEL --------------------
+  // Edita este array para cambiar los libros de cada mes.
+  // Cada objeto es un libro por semana del mes.
+  const featuredBooks = [
+    {
+      semana: 1,
+      titulo: 'Diario de Japón',
+      autor: 'María José Ferrada',
+      rating: 3.97,
+      resenas: 382,
+      descripcion: 'Un libro híbrido entre diario de viajes, ensayo y crónica: Ferrada entreteje sus propios viajes a Tokio con una investigación sobre el Genji Monogatari y Murasaki Shikibu, la primera novelista de la historia, además de reflexiones sobre la escritura y la memoria. Reconocido con el Premio Manuel Montt.',
+      tags: ['Ensayo autobiográfico', 'Crónica de viaje', 'Literatura chilena'],
+      portada: 'portada-semana1.jpg'
+    },
+    {
+      semana: 2,
+      titulo: 'El Buzón de las Impuras',
+      autor: 'Francisca Solar',
+      rating: 4.70,
+      resenas: 9900,
+      descripcion: 'Novela histórica basada en el incendio de la Iglesia de la Compañía de 1863, donde murieron más de dos mil mujeres. A través de las Hijas de María, Solar denuncia la opresión femenina de la época: del fuego solo se salvó un buzón donde las asociadas confesaban sus más íntimos pecados.',
+      tags: ['Novela histórica', 'Bestseller', 'Literatura chilena'],
+      portada: 'portada-semana2.jpg'
+    },
+    {
+      semana: 3,
+      titulo: 'Una Promesa de Cien Años',
+      autor: 'María Ignacia Urzúa Reyes',
+      rating: 4.1,
+      resenas: 500,
+      descripcion: 'Debut literario de fantasía juvenil: hace cien años una guerra de división rompió la paz de Melliedor. Kal, un joven galduriano, encuentra a una sobreviviente sin recuerdos que lleva un símbolo prohibido, vestigio de la antigua alianza entre humanos y galdurianos.',
+      tags: ['Fantasía', 'Juvenil', 'Debut literario'],
+      portada: 'portada-semana3.jpg'
+    },
+    {
+      semana: 4,
+      titulo: 'Herbolario Mistraliano',
+      autor: 'Gabriela Mistral',
+      rating: 4.5,
+      resenas: 120,
+      descripcion: 'Homenaje al mundo vegetal y a los afectos naturales de la Premio Nobel: diarios y cuadernos de jardín que recopilan textos inéditos o ilocalizables de Gabriela Mistral, una faceta íntima de la poeta conectada con la naturaleza, las flores y la memoria.',
+      tags: ['Diario', 'Naturaleza', 'Poesía chilena'],
+      portada: 'portada-semana4.jpg'
+    }
+  ];
+  // ------------------------------------------------------------------
+
+  let currentSlide = 0;
+  let autoPlayInterval;
+
+  const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const currentMonthName = MONTHS_ES[new Date().getMonth()];
 
   function renderStars(rating){
     const full = Math.round(rating);
     return '★'.repeat(full) + '☆'.repeat(5 - full);
   }
 
-  function renderFeaturedBook(book){
+  function renderCarousel(){
     const el = document.getElementById('featuredBook');
-    if(!el || !book) return;
+    if(!el || !featuredBooks.length) return;
 
-    el.innerHTML = `
-      <div class="featured-eyebrow">Libro del mes</div>
-      <p class="featured-title">Selección especial · Septiembre</p>
-      <p class="featured-subtitle">Recomendado por el equipo de la Biblioteca Pública del Maule</p>
-      <div class="featured-card">
-        <div class="featured-cover">${book.portada
-          ? `<img src="${escapeHtmlComment(book.portada)}" alt="Portada de ${escapeHtmlComment(book.titulo)}">`
-          : escapeHtmlComment(book.titulo)}</div>
-        <div class="featured-info">
-          <p class="featured-book-title">${escapeHtmlComment(book.titulo)}</p>
-          <p class="featured-book-author">por ${escapeHtmlComment(book.autor)}</p>
-          <div class="featured-rating">
-            <span class="stars">${renderStars(book.rating)}</span>
-            <b>${book.rating.toFixed(1)}</b>
-          </div>
-          <p class="featured-desc">${escapeHtmlComment(book.descripcion)}</p>
-          <div class="featured-tags">
-            ${book.tags.map(t => `<span class="featured-tag">${escapeHtmlComment(t)}</span>`).join('')}
-          </div>
-          <div class="featured-actions">
-            <button type="button" class="featured-btn primary" id="featuredWantBtn">＋ Quiero leerlo</button>
-            <button type="button" class="featured-btn secondary" id="featuredReviewBtn">✎ Escribir reseña</button>
+    const slidesHTML = featuredBooks.map((book, index) => `
+      <div class="carousel-slide">
+        <div class="week-label">Semana ${book.semana} de ${featuredBooks.length}</div>
+        <div class="featured-card">
+          <div class="featured-cover">${book.portada
+            ? `<img src="${escapeHtmlComment(book.portada)}" alt="Portada de ${escapeHtmlComment(book.titulo)}">`
+            : escapeHtmlComment(book.titulo)}</div>
+          <div class="featured-info">
+            <p class="featured-book-title">${escapeHtmlComment(book.titulo)}</p>
+            <p class="featured-book-author">por ${escapeHtmlComment(book.autor)}</p>
+            <div class="featured-rating">
+              <span class="stars">${renderStars(book.rating)}</span>
+              <b>${book.rating.toFixed(1)}</b>
+            </div>
+            <p class="featured-desc">${escapeHtmlComment(book.descripcion)}</p>
+            <div class="featured-tags">
+              ${book.tags.map(t => `<span class="featured-tag">${escapeHtmlComment(t)}</span>`).join('')}
+            </div>
+            <div class="featured-actions">
+              <button type="button" class="featured-btn primary" data-action="want" data-index="${index}">＋ Quiero leerlo</button>
+              <button type="button" class="featured-btn secondary" data-action="review" data-index="${index}">✎ Escribir reseña</button>
+            </div>
           </div>
         </div>
       </div>
+    `).join('');
+
+    const dotsHTML = featuredBooks.map((_, index) => `
+      <button class="carousel-dot${index === currentSlide ? ' active' : ''}" data-slide="${index}" aria-label="Ir a libro ${index + 1}"></button>
+    `).join('');
+
+    el.innerHTML = `
+      <div class="featured-eyebrow">Libros del Mes</div>
+      <p class="featured-title">Selección especial · ${currentMonthName}</p>
+      <p class="featured-subtitle">Recomendado por el equipo de la Biblioteca Pública del Maule</p>
+      <div class="carousel-container">
+        <div class="carousel-track" id="carouselTrack">
+          ${slidesHTML}
+        </div>
+      </div>
+      <div class="carousel-nav">
+        <button class="carousel-btn" id="prevBtn" aria-label="Anterior">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="carousel-dots">${dotsHTML}</div>
+        <button class="carousel-btn" id="nextBtn" aria-label="Siguiente">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
     `;
 
-    document.getElementById('featuredWantBtn').addEventListener('click', () => {
-      const searchInput = document.getElementById('searchInput');
-      searchInput.value = book.titulo;
-      searchInput.dispatchEvent(new Event('input'));
-      document.getElementById('resultMeta').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Event listeners para navegación
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      goToSlide(currentSlide - 1);
+      resetAutoPlay();
     });
 
-    document.getElementById('featuredReviewBtn').addEventListener('click', () => {
-      const libroInput = document.getElementById('commentLibro');
-      libroInput.value = book.titulo;
-      document.getElementById('commentForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      document.getElementById('commentTexto').focus();
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      goToSlide(currentSlide + 1);
+      resetAutoPlay();
+    });
+
+    // Dots
+    document.querySelectorAll('.carousel-dot').forEach(dot => {
+      dot.addEventListener('click', () => {
+        goToSlide(parseInt(dot.dataset.slide));
+        resetAutoPlay();
+      });
+    });
+
+    // Botones de acción
+    document.querySelectorAll('[data-action="want"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const book = featuredBooks[btn.dataset.index];
+        const searchInput = document.getElementById('searchInput');
+        searchInput.value = book.titulo;
+        searchInput.dispatchEvent(new Event('input'));
+        document.getElementById('resultMeta').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    document.querySelectorAll('[data-action="review"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const book = featuredBooks[btn.dataset.index];
+        const libroInput = document.getElementById('commentLibro');
+        libroInput.value = book.titulo;
+        document.getElementById('commentForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('commentTexto').focus();
+      });
+    });
+
+    // Iniciar auto-play
+    startAutoPlay();
+  }
+
+  function goToSlide(index){
+    if(index < 0) index = featuredBooks.length - 1;
+    if(index >= featuredBooks.length) index = 0;
+    currentSlide = index;
+
+    const track = document.getElementById('carouselTrack');
+    track.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+    // Actualizar dots
+    document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
+      dot.classList.toggle('active', i === currentSlide);
     });
   }
 
-  renderFeaturedBook(featuredBook);
+  function startAutoPlay(){
+    autoPlayInterval = setInterval(() => {
+      goToSlide(currentSlide + 1);
+    }, 5000); // Rotar cada 5 segundos
+  }
+
+  function resetAutoPlay(){
+    clearInterval(autoPlayInterval);
+    startAutoPlay();
+  }
+
+  renderCarousel();
 </script>
 
 
