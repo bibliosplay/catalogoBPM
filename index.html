@@ -355,7 +355,6 @@
   }
 
 
-
   .featured-cover-big{
     position: relative;
     width: 132px;
@@ -449,40 +448,41 @@
   }
   .featured-btn:active{ transform: scale(0.97); }
 
-  /* Flechas de navegación del carrusel: en una fila fija junto a los puntos,
-     nunca superpuestas sobre el contenido (evita que tapen el título en
-     libros con texto más largo). */
+  /* Fila de puntos indicadores, debajo del carrusel */
   .carousel-nav-row{
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 14px;
-    margin-top: 14px;
+    margin-top: 10px;
   }
+
+  /* Flechas de navegación del carrusel: superpuestas sobre la portada,
+     una a cada lado, centradas verticalmente respecto al marco de la
+     imagen (que ocupa siempre la misma posición dentro de cada slide). */
   .carousel-arrow{
-    position: static;
-    z-index: 1;
+    position: absolute;
+    top: 112px;
+    transform: translateY(-50%);
+    z-index: 2;
     flex-shrink: 0;
-    width: 36px;
-    height: 36px;
+    width: 41px;
+    height: 41px;
     border-radius: 50%;
-    border: 1.5px solid var(--line);
-    background: var(--paper-raised);
-    color: var(--ink);
+    border: none;
+    background: var(--stamp-red);
+    color: var(--paper-raised);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    box-shadow: 0 2px 8px rgba(28,36,48,0.12);
+    box-shadow: 0 4px 12px rgba(28,36,48,0.28);
   }
-  .carousel-arrow:hover{
-    border-color: var(--ink);
-    background: var(--ink);
-    color: var(--paper-raised);
-  }
-  .carousel-arrow:active{ transform: scale(0.94); }
-  .carousel-arrow svg{ width: 16px; height: 16px; }
+  .carousel-arrow.prev{ left: 8px; }
+  .carousel-arrow.next{ right: 8px; }
+  .carousel-arrow:hover{ background: #7A2A20; }
+  .carousel-arrow:active{ transform: translateY(-50%) scale(0.94); }
+  .carousel-arrow svg{ width: 18px; height: 18px; }
 
   /* Puntos indicadores */
   .carousel-dots{
@@ -510,7 +510,7 @@
   @media (max-width: 360px){
     .carousel-slide-inner{ padding: 14px 14px 16px; }
     .featured-cover-big{ width: 112px; height: 160px; }
-    .carousel-arrow{ width: 32px; height: 32px; }
+    .carousel-arrow{ width: 37px; height: 37px; top: 95px; }
   }
 
   .comment-list{
@@ -766,18 +766,18 @@
       <p class="featured-title">Selección especial · ${currentMonthName}</p>
       <p class="featured-subtitle">Recomendado por el equipo de la Biblioteca Pública del Maule</p>
       <div class="carousel-wrap">
-        <div class="carousel-track" id="carouselTrack">
-          ${slidesHTML}
-        </div>
-      </div>
-      <div class="carousel-nav-row">
         <button class="carousel-arrow prev" id="prevBtn" aria-label="Libro anterior">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
-        <div class="carousel-dots">${dotsHTML}</div>
+        <div class="carousel-track" id="carouselTrack">
+          ${slidesHTML}
+        </div>
         <button class="carousel-arrow next" id="nextBtn" aria-label="Siguiente libro">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
         </button>
+      </div>
+      <div class="carousel-nav-row">
+        <div class="carousel-dots">${dotsHTML}</div>
       </div>
     `;
 
@@ -842,7 +842,7 @@
   function startAutoPlay(){
     autoPlayInterval = setInterval(() => {
       goToSlide(currentSlide + 1);
-    }, 5000); // Rotar cada 5 segundos
+    }, 10000); // Rotar cada 10 segundos
   }
 
   function resetAutoPlay(){
