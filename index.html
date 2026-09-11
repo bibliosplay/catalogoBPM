@@ -233,6 +233,11 @@
     font-family: 'IBM Plex Mono', monospace;
     font-size: 10.5px;
     color: var(--ink-soft);
+    line-height: 1.7;
+  }
+  .footer-brand{
+    font-weight: 700;
+    color: var(--stamp-red);
   }
 
   .comments-section{
@@ -368,6 +373,7 @@
     font-weight: 600;
     font-size: 15px;
     line-height: 1.3;
+    border: 3px double var(--stamp-red);
     box-shadow: 0 10px 24px rgba(28,36,48,0.28);
     overflow: hidden;
   }
@@ -543,11 +549,11 @@
 
 <div class="frame">
   <header>
-    <div class="eyebrow">Sistema Nacional de Bibliotecas Públicas</div>
-    <h1>Buscar en el catálogo<br>Biblioteca Pública del Maule</h1>
+    <div class="eyebrow">Biblioteca Pública del Maule</div>
+    <h1>Buscar en nuestro catálogo</h1>
     <div class="search-box">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      <input type="text" id="searchInput" placeholder="Título, autor o ID…" autofocus aria-label="Buscar por título, autor o ID">
+      <input type="text" id="searchInput" placeholder="Título, autor…" autofocus aria-label="Buscar por título o autor">
       <button type="button" class="search-clear" id="searchClear" aria-label="Borrar búsqueda">✕</button>
     </div>
   </header>
@@ -578,7 +584,7 @@
     <div class="comment-list" id="commentList"></div>
   </div>
 
-  <footer id="footerNote">Biblioteca Pública del Maule</footer>
+  <footer id="footerNote">Desarrollado por <span class="footer-brand">LIB</span><br>Laboratorio de Innovación Bibliotecaria</footer>
 </div>
 
 <script>
