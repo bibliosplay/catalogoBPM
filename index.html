@@ -349,19 +349,12 @@
     text-align: center;
   }
 
-  .week-label{
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10.5px;
-    color: var(--stamp-red);
-    letter-spacing: 0.08em;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-  }
+
 
   .featured-cover-big{
     position: relative;
-    width: 148px;
-    height: 212px;
+    width: 132px;
+    height: 189px;
     margin: 0 auto 10px;
     border-radius: 8px;
     background: linear-gradient(160deg, var(--stamp-red), #7A2A20);
@@ -396,24 +389,13 @@
   .featured-book-author{
     font-size: 13.5px;
     color: var(--ink-soft);
-    margin: 0 0 6px 0;
+    margin: 0 0 10px 0;
   }
-  .featured-rating{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--ink-soft);
-    margin-bottom: 8px;
-  }
-  .featured-rating .stars{ color: var(--stamp-red); letter-spacing: 2px; font-size: 14px; }
-  .featured-rating b{ color: var(--ink); }
   .featured-desc{
     font-size: 13px;
     color: var(--ink);
     line-height: 1.42;
-    margin: 0 auto 10px;
+    margin: 0 auto 8px;
     max-width: 300px;
   }
   .featured-tags{
@@ -421,7 +403,7 @@
     flex-wrap: wrap;
     justify-content: center;
     gap: 6px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
   .featured-tag{
     font-family: 'IBM Plex Mono', monospace;
@@ -519,7 +501,7 @@
 
   @media (max-width: 360px){
     .carousel-slide-inner{ padding: 14px 14px 16px; }
-    .featured-cover-big{ width: 128px; height: 183px; }
+    .featured-cover-big{ width: 112px; height: 160px; }
     .carousel-arrow{ width: 32px; height: 32px; }
   }
 
@@ -741,11 +723,6 @@
   const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const currentMonthName = MONTHS_ES[new Date().getMonth()];
 
-  function renderStars(rating){
-    const full = Math.round(rating);
-    return '★'.repeat(full) + '☆'.repeat(5 - full);
-  }
-
   function renderCarousel(){
     const el = document.getElementById('featuredBook');
     if(!el || !featuredBooks.length) return;
@@ -753,17 +730,12 @@
     const slidesHTML = featuredBooks.map((book, index) => `
       <div class="carousel-slide">
         <div class="carousel-slide-inner">
-          <div class="week-label">Semana ${book.semana} de ${featuredBooks.length}</div>
           <div class="featured-cover-big">${book.portada
             ? `<img src="${escapeHtml(book.portada)}" alt="Portada de ${escapeHtml(book.titulo)}">`
             : escapeHtml(book.titulo)}</div>
           <div class="featured-info">
             <p class="featured-book-title">${escapeHtml(book.titulo)}</p>
             <p class="featured-book-author">por ${escapeHtml(book.autor)}</p>
-            <div class="featured-rating">
-              <span class="stars">${renderStars(book.rating)}</span>
-              <b>${book.rating.toFixed(1)}</b>
-            </div>
             <p class="featured-desc">${escapeHtml(book.descripcion)}</p>
             <div class="featured-tags">
               ${book.tags.map(t => `<span class="featured-tag">${escapeHtml(t)}</span>`).join('')}
