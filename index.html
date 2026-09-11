@@ -448,17 +448,11 @@
   }
   .featured-btn:active{ transform: scale(0.97); }
 
-  /* Fila de puntos indicadores, debajo del carrusel */
-  .carousel-nav-row{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 10px;
-  }
-
   /* Flechas de navegación del carrusel: superpuestas sobre la portada,
      una a cada lado, centradas verticalmente respecto al marco de la
-     imagen (que ocupa siempre la misma posición dentro de cada slide). */
+     imagen (que ocupa siempre la misma posición dentro de cada slide).
+     Color atenuado (60% de opacidad) para que no compitan visualmente
+     con la portada; recuperan opacidad completa al pasar el mouse. */
   .carousel-arrow{
     position: absolute;
     top: 112px;
@@ -477,35 +471,13 @@
     justify-content: center;
     transition: all 0.2s;
     box-shadow: 0 4px 12px rgba(28,36,48,0.28);
+    opacity: 0.6;
   }
   .carousel-arrow.prev{ left: 8px; }
   .carousel-arrow.next{ right: 8px; }
-  .carousel-arrow:hover{ background: #7A2A20; }
+  .carousel-arrow:hover{ background: #7A2A20; opacity: 1; }
   .carousel-arrow:active{ transform: translateY(-50%) scale(0.94); }
   .carousel-arrow svg{ width: 18px; height: 18px; }
-
-  /* Puntos indicadores */
-  .carousel-dots{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-  }
-  .carousel-dot{
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--line);
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s;
-    padding: 0;
-  }
-  .carousel-dot.active{
-    background: var(--stamp-red);
-    width: 24px;
-    border-radius: 4px;
-  }
 
   @media (max-width: 360px){
     .carousel-slide-inner{ padding: 14px 14px 16px; }
@@ -757,10 +729,6 @@
       </div>
     `).join('');
 
-    const dotsHTML = featuredBooks.map((_, index) => `
-      <button class="carousel-dot${index === currentSlide ? ' active' : ''}" data-slide="${index}" aria-label="Ir a libro ${index + 1}"></button>
-    `).join('');
-
     el.innerHTML = `
       <div class="featured-eyebrow">Libros del Mes</div>
       <p class="featured-title">Selección especial · ${currentMonthName}</p>
@@ -776,9 +744,6 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
         </button>
       </div>
-      <div class="carousel-nav-row">
-        <div class="carousel-dots">${dotsHTML}</div>
-      </div>
     `;
 
     // Event listeners para navegación
@@ -790,14 +755,6 @@
     document.getElementById('nextBtn').addEventListener('click', () => {
       goToSlide(currentSlide + 1);
       resetAutoPlay();
-    });
-
-    // Dots
-    document.querySelectorAll('.carousel-dot').forEach(dot => {
-      dot.addEventListener('click', () => {
-        goToSlide(parseInt(dot.dataset.slide));
-        resetAutoPlay();
-      });
     });
 
     // Botones de acción
@@ -832,11 +789,6 @@
 
     const track = document.getElementById('carouselTrack');
     track.style.transform = `translateX(-${currentSlide * 100}%)`;
-
-    // Actualizar dots
-    document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
-      dot.classList.toggle('active', i === currentSlide);
-    });
   }
 
   function startAutoPlay(){
