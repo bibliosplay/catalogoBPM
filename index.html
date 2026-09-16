@@ -904,13 +904,14 @@
   const fichaBody = document.getElementById('fichaBody');
   const fichaClose = document.getElementById('fichaClose');
 
-  function buildLink(id){
+ function buildLink(id){
     const idStr = String(id).trim();
     if(!/^\d+$/.test(idStr)){
-      return 'https://www.bncatalogo.cl/';
+      return 'http://bncatalogo.cl/';
     }
     const paddedId = idStr.padStart(9, '0');
-    return `https://www.bncatalogo.cl/F/?func=item-global&doc_library=SBP01&doc_number=${paddedId}&sub_library=7336`;
+    // OJO: bncatalogo.cl va SIN "www." — con www da ERR_CONNECTION_REFUSED
+    return `http://bncatalogo.cl/F/?func=item-global&doc_library=SBP01&doc_number=${paddedId}&sub_library=7336`;
   }
 
   function openFicha(item){
