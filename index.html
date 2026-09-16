@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Buscador · Biblioteca Pública del Maule</title>
-<meta name="description" content="Busca libros del catálogo de la Biblioteca Pública del Maule por título, autor o ID, desde el celular, sin depender del catálogo ALEPH.">
+<meta name="description" content="Busca libros del catálogo de la Biblioteca Pública del Maule por título, autor o ID, desde el celular.">
 <meta name="theme-color" content="#EDE6D6">
 <meta property="og:title" content="Buscador · Biblioteca Pública del Maule">
 <meta property="og:description" content="Búsqueda rápida y amigable en el catálogo de la Biblioteca Pública del Maule.">
@@ -14,7 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style> 
+<style>
   :root{
     --paper: #EDE6D6;
     --paper-raised: #F5F0E4;
@@ -115,15 +115,6 @@
   }
   .search-clear.visible{ display: flex; }
 
-  .sr-only{
-    position: absolute;
-    width: 1px; height: 1px;
-    padding: 0; margin: -1px;
-    overflow: hidden;
-    clip: rect(0,0,0,0);
-    white-space: nowrap;
-    border: 0;
-  }
   .honeypot-field{
     position: absolute !important;
     left: -9999px !important;
@@ -153,7 +144,10 @@
     border-radius: var(--radius);
     padding: 16px 16px 14px 20px;
     overflow: hidden;
+    cursor: pointer;
+    transition: transform .12s ease;
   }
+  .card:active{ transform: scale(0.985); }
   .card::before{
     content: "";
     position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
@@ -183,18 +177,13 @@
     font-size: 11px;
     color: var(--ink-soft);
   }
-  .card-link{
+  .card-cta{
     font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 600;
-    text-decoration: none;
-    color: var(--paper-raised);
-    background: var(--stamp-red);
-    padding: 7px 13px;
-    border-radius: 8px;
+    color: var(--stamp-red);
     white-space: nowrap;
   }
-  .card-link:active{ transform: scale(0.97); }
 
   .empty, .loading, .error, .prompt{
     text-align: center;
@@ -240,73 +229,139 @@
     color: var(--stamp-red);
   }
 
-  .comments-section{
-    margin-top: 28px;
-    padding: 20px 18px 4px;
-    border-top: 1px solid var(--line);
+  /* ---------- MODAL FICHA ---------- */
+  .ficha-overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(28,36,48,0.55);
+    z-index: 50;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
   }
-  .comments-eyebrow{
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--green);
-    margin-bottom: 4px;
+  .ficha-overlay.open{ display: flex; }
+  @media (min-width: 620px){
+    .ficha-overlay{ align-items: center; padding: 20px; }
   }
-  .comments-title{
+  .ficha{
+    background: var(--paper-raised);
+    width: 100%;
+    max-width: 460px;
+    max-height: 88vh;
+    overflow-y: auto;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -10px 40px rgba(28,36,48,0.28);
+    animation: slideUp .22s ease-out;
+  }
+  @media (min-width: 620px){
+    .ficha{ border-radius: 20px; }
+  }
+  @keyframes slideUp{
+    from{ transform: translateY(30px); opacity: 0; }
+    to{ transform: translateY(0); opacity: 1; }
+  }
+  .ficha-head{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    background: var(--paper-raised);
+    z-index: 1;
+  }
+  .ficha-head .eyebrow{ margin: 0; font-size: 10.5px; }
+  .ficha-close{
+    background: none;
+    border: none;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--ink-soft);
+    cursor: pointer;
+    padding: 0 4px;
+  }
+  .ficha-body{
+    padding: 20px 18px 22px;
+  }
+  .ficha-title{
     font-family: 'Fraunces', serif;
     font-weight: 600;
-    font-size: 19px;
-    margin: 0 0 4px 0;
+    font-size: 21px;
+    line-height: 1.25;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.01em;
   }
-  .comments-subtitle{
-    font-size: 13px;
+  .ficha-author{
+    font-size: 14px;
     color: var(--ink-soft);
-    margin: 0 0 16px 0;
+    margin: 0 0 18px 0;
   }
-
-  .comment-form{
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 22px;
+  .ficha-dl{
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 10px 12px;
+    margin: 0;
+    padding: 16px 0;
+    border-top: 1px dashed var(--line);
+    border-bottom: 1px dashed var(--line);
   }
-  .comment-form input, .comment-form textarea{
+  .ficha-dl dt{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    padding-top: 3px;
+  }
+  .ficha-dl dd{
+    margin: 0;
+    font-size: 14px;
+    color: var(--ink);
+    word-break: break-word;
+  }
+  .ficha-dl dd.mono{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+  }
+  .ficha-badge{
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--green);
+    background: var(--green-soft);
+    border-radius: 20px;
+    padding: 4px 10px;
+  }
+  .ficha-cta{
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 14px;
+    border-radius: 10px;
+    background: var(--stamp-red);
+    color: var(--paper-raised);
     font-family: 'IBM Plex Sans', sans-serif;
     font-size: 14.5px;
-    color: var(--ink);
-    background: var(--paper-raised);
-    border: 1.5px solid var(--line);
-    border-radius: 10px;
-    padding: 10px 12px;
-    outline: none;
-  }
-  .comment-form input:focus, .comment-form textarea:focus{ border-color: var(--ink); }
-  .comment-form textarea{ resize: vertical; min-height: 70px; font-family: 'IBM Plex Sans', sans-serif; }
-  .comment-submit{
-    align-self: flex-start;
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 13.5px;
     font-weight: 600;
-    color: var(--paper-raised);
-    background: var(--stamp-red);
+    text-align: center;
+    text-decoration: none;
     border: none;
-    border-radius: 8px;
-    padding: 10px 18px;
     cursor: pointer;
   }
-  .comment-submit:disabled{ opacity: 0.5; cursor: default; }
-  .comment-status{
-    font-size: 12.5px;
-    color: var(--green);
-    font-family: 'IBM Plex Mono', monospace;
+  .ficha-cta:active{ transform: scale(0.98); }
+  .ficha-note{
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    text-align: center;
+    margin: 12px 0 0 0;
+    line-height: 1.5;
   }
-  .comment-status.error{ color: var(--stamp-red); }
 
-  /* -------- Libros del Mes - Carrusel -------- */
-  .featured{
-    padding: 18px 18px 4px;
-  }
+  /* ---------- CARRUSEL ---------- */
+  .featured{ padding: 18px 18px 4px; }
   .featured-eyebrow{
     font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
@@ -329,8 +384,6 @@
     color: var(--ink-soft);
     margin: 0 0 14px 0;
   }
-
-  /* Carrusel: portada grande destacada */
   .carousel-wrap{
     position: relative;
     overflow: hidden;
@@ -345,7 +398,6 @@
     min-width: 0;
     max-width: 100%;
   }
-
   .carousel-slide-inner{
     background: var(--paper-raised);
     border: 1px solid var(--line);
@@ -353,8 +405,6 @@
     padding: 16px 20px 18px;
     text-align: center;
   }
-
-
   .featured-cover-big{
     position: relative;
     width: 132px;
@@ -384,7 +434,6 @@
     object-fit: cover;
     border-radius: 8px;
   }
-
   .featured-info{ padding: 0 4px; }
   .featured-book-title{
     font-family: 'Fraunces', serif;
@@ -447,12 +496,6 @@
     border: 1.5px solid var(--line);
   }
   .featured-btn:active{ transform: scale(0.97); }
-
-  /* Flechas de navegación del carrusel: superpuestas sobre la portada,
-     una a cada lado, centradas verticalmente respecto al marco de la
-     imagen (que ocupa siempre la misma posición dentro de cada slide).
-     Color atenuado (60% de opacidad) para que no compitan visualmente
-     con la portada; recuperan opacidad completa al pasar el mouse. */
   .carousel-arrow{
     position: absolute;
     top: 112px;
@@ -478,13 +521,74 @@
   .carousel-arrow:hover{ background: #7A2A20; opacity: 1; }
   .carousel-arrow:active{ transform: translateY(-50%) scale(0.94); }
   .carousel-arrow svg{ width: 18px; height: 18px; }
-
   @media (max-width: 360px){
     .carousel-slide-inner{ padding: 14px 14px 16px; }
     .featured-cover-big{ width: 112px; height: 160px; }
     .carousel-arrow{ width: 37px; height: 37px; top: 95px; }
   }
 
+  /* ---------- COMENTARIOS ---------- */
+  .comments-section{
+    margin-top: 28px;
+    padding: 20px 18px 4px;
+    border-top: 1px solid var(--line);
+  }
+  .comments-eyebrow{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 4px;
+  }
+  .comments-title{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 19px;
+    margin: 0 0 4px 0;
+  }
+  .comments-subtitle{
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 16px 0;
+  }
+  .comment-form{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  .comment-form input, .comment-form textarea{
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14.5px;
+    color: var(--ink);
+    background: var(--paper-raised);
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    outline: none;
+  }
+  .comment-form input:focus, .comment-form textarea:focus{ border-color: var(--ink); }
+  .comment-form textarea{ resize: vertical; min-height: 70px; font-family: 'IBM Plex Sans', sans-serif; }
+  .comment-submit{
+    align-self: flex-start;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--paper-raised);
+    background: var(--stamp-red);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    cursor: pointer;
+  }
+  .comment-submit:disabled{ opacity: 0.5; cursor: default; }
+  .comment-status{
+    font-size: 12.5px;
+    color: var(--green);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .comment-status.error{ color: var(--stamp-red); }
   .comment-list{
     display: flex;
     flex-direction: column;
@@ -559,20 +663,28 @@
   <footer id="footerNote">Desarrollado por <span class="footer-brand">LIB</span><br>Laboratorio de Innovación Bibliotecaria</footer>
 </div>
 
+<!-- MODAL FICHA -->
+<div class="ficha-overlay" id="fichaOverlay" role="dialog" aria-modal="true" aria-labelledby="fichaTitle">
+  <div class="ficha">
+    <div class="ficha-head">
+      <div class="eyebrow">Ficha del libro</div>
+      <button class="ficha-close" id="fichaClose" aria-label="Cerrar ficha">×</button>
+    </div>
+    <div class="ficha-body" id="fichaBody"></div>
+  </div>
+</div>
+
 <script>
   // -------------------- UTILIDAD COMPARTIDA --------------------
-  // Usada por los tres módulos (comentarios, carrusel y buscador)
-  // para evitar inyección de HTML desde datos externos (CSV / Supabase).
   function escapeHtml(text){
     const div = document.createElement('div');
     div.textContent = text || '';
     return div.innerHTML;
   }
 
-  // -------------------- CONFIGURACIÓN SUPABASE --------------------
+  // -------------------- SUPABASE (COMENTARIOS) --------------------
   const SUPABASE_URL = 'https://mzspglxyneteoookmdqu.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_0MjZX8MyCocw7T4J6tnvmQ_aH3MJGXB';
-  // ------------------------------------------------------------------
 
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -589,15 +701,8 @@
       .order('created_at', { ascending: false })
       .limit(30);
 
-    if(error){
-      console.error('Error cargando comentarios:', error);
-      return;
-    }
-
-    if(!data || data.length === 0){
-      commentListEl.innerHTML = '';
-      return;
-    }
+    if(error){ console.error('Error cargando comentarios:', error); return; }
+    if(!data || data.length === 0){ commentListEl.innerHTML = ''; return; }
 
     commentListEl.innerHTML = data.map(c => `
       <div class="comment-card">
@@ -611,9 +716,6 @@
   commentForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Honeypot: los bots suelen rellenar todos los campos, incluido este,
-    // que está oculto para personas. Si viene con contenido, se ignora en
-    // silencio (evita darle pistas a los bots de que fue detectado).
     const honeypot = document.getElementById('commentWebsite').value.trim();
     if(honeypot){
       commentForm.reset();
@@ -651,16 +753,12 @@
 
 <script>
   // -------------------- LIBROS DEL MES - CARRUSEL --------------------
-  // Edita este array para cambiar los libros de cada mes.
-  // Cada objeto es un libro por semana del mes.
   const featuredBooks = [
     {
       semana: 1,
       titulo: 'Diario de Japón',
       autor: 'María José Ferrada',
-      rating: 3.97,
-      resenas: 382,
-      descripcion: 'Un libro híbrido entre diario de viajes, ensayo y crónica: Ferrada entreteje sus propios viajes a Tokio con una investigación sobre el Genji Monogatari y Murasaki Shikibu, la primera novelista de la historia, además de reflexiones sobre la escritura y la memoria. Reconocido con el Premio Manuel Montt.',
+      descripcion: 'Un libro híbrido entre diario de viajes, ensayo y crónica: Ferrada entreteje sus propios viajes a Tokio con una investigación sobre el Genji Monogatari y Murasaki Shikibu, la primera novelista de la historia.',
       tags: ['Ensayo autobiográfico', 'Crónica de viaje', 'Literatura chilena'],
       portada: 'portada-semana1.jpg'
     },
@@ -668,9 +766,7 @@
       semana: 2,
       titulo: 'El Buzón de las Impuras',
       autor: 'Francisca Solar',
-      rating: 4.70,
-      resenas: 9900,
-      descripcion: 'Novela histórica basada en el incendio de la Iglesia de la Compañía de 1863, donde murieron más de dos mil mujeres. A través de las Hijas de María, Solar denuncia la opresión femenina de la época: del fuego solo se salvó un buzón donde las asociadas confesaban sus más íntimos pecados.',
+      descripcion: 'Novela histórica basada en el incendio de la Iglesia de la Compañía de 1863, donde murieron más de dos mil mujeres. Del fuego solo se salvó un buzón donde las asociadas confesaban sus más íntimos pecados.',
       tags: ['Novela histórica', 'Bestseller', 'Literatura chilena'],
       portada: 'portada-semana2.jpg'
     },
@@ -678,9 +774,7 @@
       semana: 3,
       titulo: 'Una Promesa de Cien Años',
       autor: 'María Ignacia Urzúa Reyes',
-      rating: 4.1,
-      resenas: 500,
-      descripcion: 'Debut literario de fantasía juvenil: hace cien años una guerra de división rompió la paz de Melliedor. Kal, un joven galduriano, encuentra a una sobreviviente sin recuerdos que lleva un símbolo prohibido, vestigio de la antigua alianza entre humanos y galdurianos.',
+      descripcion: 'Debut literario de fantasía juvenil: hace cien años una guerra de división rompió la paz de Melliedor. Kal encuentra a una sobreviviente sin recuerdos que lleva un símbolo prohibido.',
       tags: ['Fantasía', 'Juvenil', 'Debut literario'],
       portada: 'portada-semana3.jpg'
     },
@@ -688,14 +782,11 @@
       semana: 4,
       titulo: 'Herbario Mistraliano',
       autor: 'Gabriela Mistral',
-      rating: 4.5,
-      resenas: 120,
-      descripcion: 'Homenaje al mundo vegetal y a los afectos naturales de la Premio Nobel: diarios y cuadernos de jardín que recopilan textos inéditos o ilocalizables de Gabriela Mistral, una faceta íntima de la poeta conectada con la naturaleza, las flores y la memoria.',
+      descripcion: 'Homenaje al mundo vegetal y a los afectos naturales de la Premio Nobel: diarios y cuadernos de jardín que recopilan textos inéditos o ilocalizables de Gabriela Mistral.',
       tags: ['Diario', 'Naturaleza', 'Poesía chilena'],
       portada: 'portada-semana4.jpg'
     }
   ];
-  // ------------------------------------------------------------------
 
   let currentSlide = 0;
   let autoPlayInterval;
@@ -711,7 +802,7 @@
       <div class="carousel-slide">
         <div class="carousel-slide-inner">
           <div class="featured-cover-big">${book.portada
-            ? `<img src="${escapeHtml(book.portada)}" alt="Portada de ${escapeHtml(book.titulo)}">`
+            ? `<img src="${escapeHtml(book.portada)}" alt="Portada de ${escapeHtml(book.titulo)}" onerror="this.remove()">`
             : escapeHtml(book.titulo)}</div>
           <div class="featured-info">
             <p class="featured-book-title">${escapeHtml(book.titulo)}</p>
@@ -746,18 +837,13 @@
       </div>
     `;
 
-    // Event listeners para navegación
     document.getElementById('prevBtn').addEventListener('click', () => {
-      goToSlide(currentSlide - 1);
-      resetAutoPlay();
+      goToSlide(currentSlide - 1); resetAutoPlay();
     });
-
     document.getElementById('nextBtn').addEventListener('click', () => {
-      goToSlide(currentSlide + 1);
-      resetAutoPlay();
+      goToSlide(currentSlide + 1); resetAutoPlay();
     });
 
-    // Botones de acción
     document.querySelectorAll('[data-action="want"]').forEach(btn => {
       btn.addEventListener('click', () => {
         const book = featuredBooks[btn.dataset.index];
@@ -771,14 +857,12 @@
     document.querySelectorAll('[data-action="review"]').forEach(btn => {
       btn.addEventListener('click', () => {
         const book = featuredBooks[btn.dataset.index];
-        const libroInput = document.getElementById('commentLibro');
-        libroInput.value = book.titulo;
+        document.getElementById('commentLibro').value = book.titulo;
         document.getElementById('commentForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
         document.getElementById('commentTexto').focus();
       });
     });
 
-    // Iniciar auto-play
     startAutoPlay();
   }
 
@@ -786,17 +870,13 @@
     if(index < 0) index = featuredBooks.length - 1;
     if(index >= featuredBooks.length) index = 0;
     currentSlide = index;
-
     const track = document.getElementById('carouselTrack');
     track.style.transform = `translateX(-${currentSlide * 100}%)`;
   }
 
   function startAutoPlay(){
-    autoPlayInterval = setInterval(() => {
-      goToSlide(currentSlide + 1);
-    }, 10000); // Rotar cada 10 segundos
+    autoPlayInterval = setInterval(() => { goToSlide(currentSlide + 1); }, 10000);
   }
-
   function resetAutoPlay(){
     clearInterval(autoPlayInterval);
     startAutoPlay();
@@ -805,12 +885,10 @@
   renderCarousel();
 </script>
 
-
 <script>
-  // -------------------- CONFIGURACIÓN --------------------
-  const CSV_URL = 'datos.csv';   // mismo archivo que usa buscador_bpm.html
-  const PAGE_SIZE = 40;          // cuántas tarjetas se muestran a la vez
-  // -------------------------------------------------------
+  // -------------------- BUSCADOR + FICHA --------------------
+  const CSV_URL = 'datos.csv';
+  const PAGE_SIZE = 40;
 
   let allData = [];
   let currentFiltered = [];
@@ -820,23 +898,56 @@
   const metaEl = document.getElementById('resultMeta');
   const input = document.getElementById('searchInput');
   const loadMoreBtn = document.getElementById('loadMore');
-  const footerNote = document.getElementById('footerNote');
+
+  // ----- FICHA (modal) -----
+  const fichaOverlay = document.getElementById('fichaOverlay');
+  const fichaBody = document.getElementById('fichaBody');
+  const fichaClose = document.getElementById('fichaClose');
 
   function buildLink(id){
-    // ALEPH necesita el doc_number relleno a 9 dígitos con ceros a la izquierda.
-    // Si el ID no es puramente numérico (dato inesperado en el CSV), evitamos
-    // generar un enlace incorrecto y mandamos al buscador general del catálogo.
     const idStr = String(id).trim();
     if(!/^\d+$/.test(idStr)){
-      return 'http://www.bncatalogo.cl/';
+      return 'https://www.bncatalogo.cl/';
     }
     const paddedId = idStr.padStart(9, '0');
-    return `http://www.bncatalogo.cl/F/?func=item-global&doc_library=SBP01&doc_number=${paddedId}&sub_library=7336`;
+    return `https://www.bncatalogo.cl/F/?func=item-global&doc_library=SBP01&doc_number=${paddedId}&sub_library=7336`;
   }
 
-  // Quita tildes/diéresis manteniendo el largo del texto (mapeo 1 a 1),
-  // así los índices siguen siendo válidos para resaltar coincidencias.
-  // Permite que buscar "nunez" encuentre "Núñez" y "meson" encuentre "mesón".
+  function openFicha(item){
+    fichaBody.innerHTML = `
+      <h2 class="ficha-title" id="fichaTitle">${escapeHtml(item.titulo)}</h2>
+      <p class="ficha-author">${escapeHtml(item.autor)}</p>
+      <dl class="ficha-dl">
+        <dt>Ubicación</dt>
+        <dd class="mono">${escapeHtml(item.ubicacion) || '—'}</dd>
+        <dt>Colección</dt>
+        <dd>${item.coleccion ? `<span class="ficha-badge">${escapeHtml(item.coleccion)}</span>` : '—'}</dd>
+        <dt>N° sistema</dt>
+        <dd class="mono">${escapeHtml(item.id)}</dd>
+      </dl>
+      <a class="ficha-cta" href="${buildLink(item.id)}" target="_blank" rel="noopener">
+        Ver disponibilidad en el catálogo BNC ↗
+      </a>
+      <p class="ficha-note">La disponibilidad (prestado / disponible) solo se puede consultar en el catálogo oficial de la Biblioteca Nacional.</p>
+    `;
+    fichaOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeFicha(){
+    fichaOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  fichaClose.addEventListener('click', closeFicha);
+  fichaOverlay.addEventListener('click', (e) => {
+    if(e.target === fichaOverlay) closeFicha();
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && fichaOverlay.classList.contains('open')) closeFicha();
+  });
+
+  // ----- NORMALIZACIÓN Y BÚSQUEDA -----
   const ACCENT_MAP = { 'á':'a','é':'e','í':'i','ó':'o','ú':'u','ü':'u','ñ':'n',
                        'Á':'A','É':'E','Í':'I','Ó':'O','Ú':'U','Ü':'U','Ñ':'N' };
   function foldAccents(text){
@@ -851,6 +962,7 @@
     return safe.slice(0, idx) + '<mark>' + safe.slice(idx, idx + query.length) + '</mark>' + safe.slice(idx + query.length);
   }
 
+  // ----- CARGA DEL CSV -----
   async function loadCSV(){
     resultsEl.innerHTML = '<div class="loading">Cargando catálogo…</div>';
     try{
@@ -858,12 +970,10 @@
       if(!response.ok) throw new Error('No se pudo cargar el archivo CSV');
       const csvText = await response.text();
 
-      // Parseo robusto con PapaParse: respeta comas dentro de comillas
-      // (importante porque los autores vienen como "Apellido, Nombre")
       const parsed = Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
-        transformHeader: h => h.trim().toLowerCase()
+        transformHeader: h => h.replace(/^\uFEFF/, '').trim().toLowerCase()
       });
 
       if(parsed.errors && parsed.errors.length){
@@ -871,13 +981,20 @@
       }
 
       const rows = parsed.data;
-      if(!rows.length || !('autor' in rows[0]) || !('titulo' in rows[0]) || !('id' in rows[0])){
-        throw new Error('El CSV debe tener columnas: autor, titulo, id');
+      if(!rows.length || !('titulo' in rows[0]) || !('autor' in rows[0]) || !('id' in rows[0])){
+        throw new Error('El CSV debe tener columnas: id, Titulo, Autor, Ubicacion, Colección');
       }
 
       allData = rows
-        .filter(r => r.autor && r.titulo && r.id)
-        .map(r => ({ autor: r.autor.trim(), titulo: r.titulo.trim(), id: r.id.trim() }));
+        .filter(r => r.titulo && r.autor && r.id)
+        .map(r => ({
+          id: String(r.id).trim(),
+          titulo: String(r.titulo).trim(),
+          autor: String(r.autor).trim(),
+          ubicacion: String(r.ubicacion || '').trim(),
+          // Acepta "Colección", "Coleccion" o "Categoria" sin importar tilde/mayúsculas
+          coleccion: String(r['colección'] || r.coleccion || r.categoria || '').trim()
+        }));
 
       showPrompt();
     }catch(error){
@@ -902,16 +1019,24 @@
       return;
     }
 
-    resultsEl.innerHTML = toShow.map(item => `
-      <div class="card">
+    resultsEl.innerHTML = toShow.map((item, i) => `
+      <div class="card" data-index="${i}" role="button" tabindex="0">
         <p class="card-title">${highlight(item.titulo, query)}</p>
         <p class="card-author">${highlight(item.autor, query)}</p>
         <div class="card-bottom">
-          <span class="card-id">ID ${escapeHtml(item.id)}</span>
-          <a class="card-link" href="${buildLink(item.id)}" target="_blank" rel="noopener">Ver en catálogo →</a>
+          <span class="card-id">${escapeHtml(item.coleccion) || 'Sin colección'} · ID ${escapeHtml(item.id)}</span>
+          <span class="card-cta">Ver ficha →</span>
         </div>
       </div>
     `).join('');
+
+    document.querySelectorAll('.card').forEach(el => {
+      const item = toShow[+el.dataset.index];
+      el.addEventListener('click', () => openFicha(item));
+      el.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openFicha(item); }
+      });
+    });
 
     loadMoreBtn.style.display = shown < currentFiltered.length ? 'block' : 'none';
   }
