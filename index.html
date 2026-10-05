@@ -80,6 +80,22 @@
     font-size: 16px; color: var(--ink); width: 100%;
   }
   .search-box input::placeholder{ color: var(--ink-soft); }
+  .search-clear{
+    flex-shrink: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: none;
+    background: var(--line);
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+  }
+  .search-clear.visible{ display: flex; }
 
   .result-meta{
     padding: 14px 18px 4px;
@@ -572,7 +588,8 @@
     <h1>Buscar en el catálogo<br>Biblioteca Pública del Maule</h1>
     <div class="search-box">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      <input type="text" id="searchInput" placeholder="Título, autor o ID…" autofocus>
+      <input type="text" id="searchInput" placeholder="Título, autor o ID…" autofocus aria-label="Buscar por título, autor o ID">
+      <button type="button" class="search-clear" id="searchClear" aria-label="Borrar búsqueda">✕</button>
     </div>
   </header>
 
@@ -977,11 +994,28 @@
     renderPage(query);
   }
 
+  const clearBtn = document.getElementById('searchClear');
+
   let debounceTimer;
   input.addEventListener('input', (e) => {
+    clearBtn.classList.toggle('visible', e.target.value.length > 0);
     clearTimeout(debounceTimer);
     const query = e.target.value.trim();
     debounceTimer = setTimeout(() => runSearch(query), 180);
+  });
+
+  clearBtn.addEventListener('click', () => {
+    input.value = '';
+    clearBtn.classList.remove('visible');
+    input.focus();
+    runSearch('');
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if(e.key !== 'Escape' || !input.value) return;
+    input.value = '';
+    clearBtn.classList.remove('visible');
+    runSearch('');
   });
 
   loadMoreBtn.addEventListener('click', () => {
