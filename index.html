@@ -286,8 +286,9 @@
     transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .carousel-slide{
-    min-width: 100%;
-    flex-shrink: 0;
+    flex: 0 0 100%;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .carousel-slide-inner{
@@ -383,6 +384,7 @@
     line-height: 1.5;
     margin: 0 auto 14px;
     max-width: 300px;
+    overflow-wrap: break-word;
   }
   .featured-tags{
     display: flex;
@@ -400,6 +402,9 @@
     border-radius: 20px;
     padding: 4px 10px;
     white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .featured-actions{
     display: flex;
@@ -490,6 +495,14 @@
     .carousel-arrow{ width: 32px; height: 32px; }
     .carousel-arrow.prev{ left: 3px; }
     .carousel-arrow.next{ right: 3px; }
+
+    @media (max-width: 360px){
+      .featured{ padding: 18px 18px 4px; }
+      .carousel-slide-inner{ padding: 14px 14px 16px; }
+      .featured-cover-big{ width: 112px; height: 160px; }
+      .carousel-arrow{ width: 30px; height: 30px; top: 92px; }
+      .featured-desc{ font-size: 12.5px; }
+    }
   }
 
   .comment-list{
@@ -745,7 +758,7 @@
         <div class="carousel-slide-inner">
           <div class="week-label">Semana ${book.semana}</div>
           <div class="featured-cover-big">${book.portada
-            ? `<img src="${escapeHtmlComment(book.portada)}" alt="Portada de ${escapeHtmlComment(book.titulo)}">`
+            ? `<img src="${escapeHtmlComment(book.portada)}" alt="Portada de ${escapeHtmlComment(book.titulo)}" onerror="this.remove()">`
             : escapeHtmlComment(book.titulo)}</div>
           <div class="featured-info">
             <p class="featured-book-title">${escapeHtmlComment(book.titulo)}</p>
@@ -776,13 +789,13 @@
       <p class="featured-title">Selección especial · ${currentMonthName}</p>
       <p class="featured-subtitle">Recomendado por el equipo de la Biblioteca Pública del Maule</p>
       <div class="carousel-wrap">
-        <button class="carousel-arrow prev" id="prevBtn" aria-label="Anterior">
+        <button class="carousel-arrow prev" id="prevBtn" aria-label="Libro anterior">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
         <div class="carousel-track" id="carouselTrack">
           ${slidesHTML}
         </div>
-        <button class="carousel-arrow next" id="nextBtn" aria-label="Siguiente">
+        <button class="carousel-arrow next" id="nextBtn" aria-label="Siguiente libro">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
         </button>
       </div>
