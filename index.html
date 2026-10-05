@@ -341,8 +341,8 @@
   .featured-cover-big::after{
     content: "";
     position: absolute;
-    inset: 6px;
-    border: 1px solid rgba(245,240,228,0.35);
+    inset: 4.8px;
+    border: 0.8px solid rgba(245,240,228,0.35);
     border-radius: 5px;
     pointer-events: none;
   }
@@ -367,17 +367,6 @@
     color: var(--ink-soft);
     margin: 0 0 10px 0;
   }
-  .featured-rating{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-size: 12.5px;
-    color: var(--ink-soft);
-    margin-bottom: 12px;
-  }
-  .featured-rating .stars{ color: var(--gold); letter-spacing: 2px; font-size: 13px; }
-  .featured-rating b{ color: var(--ink); font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
   .featured-desc{
     font-size: 13px;
     color: var(--ink);
@@ -699,8 +688,6 @@
       semana: 5,
       titulo: 'En agosto nos vemos',
       autor: 'Gabriel García Márquez',
-      rating: 0,
-      resenas: 0,
       descripcion: 'Novela póstuma del escritor colombiano, publicada en 2024 para celebrar el 97 aniversario de su nacimiento. Cada mes de agosto, Ana Magdalena Bach toma el transbordador hasta la isla de Curazao, donde está enterrada su madre, para visitar su tumba. Esas visitas acaban suponiendo una irresistible invitación a convertirse en una persona distinta durante una noche al año.',
       tags: ['Novela póstuma', 'Realismo mágico', 'Literatura colombiana'],
       portada: 'portada-semana5.jpg'
@@ -709,8 +696,6 @@
       semana: 6,
       titulo: 'Romper el círculo',
       autor: 'Colleen Hoover',
-      rating: 0,
-      resenas: 0,
       descripcion: 'Novela romántica publicada en 2016, basada en la relación entre la madre y el padre de la autora, a la que Hoover describió como el libro más difícil que ha escrito jamás. Explora de forma directa temas de violencia doméstica y abuso emocional, y las razones que mantienen atrapadas a las víctimas dentro del ciclo.',
       tags: ['Novela romántica', 'Realismo', 'Contemporáneo'],
       portada: 'portada-semana6.jpg'
@@ -719,8 +704,6 @@
       semana: 7,
       titulo: 'Los detectives salvajes',
       autor: 'Roberto Bolaño',
-      rating: 0,
-      resenas: 0,
       descripcion: 'Quinta novela del escritor chileno, aparecida en 1998. Consta de tres partes: la primera y la tercera son el diario de Juan García Madero, un joven de 17 años; la segunda reúne fragmentos de testimonios de 52 personajes distintos. El relato es un homenaje al infrarealismo, movimiento poético.',
       tags: ['Narrativa chilena', 'Infrarealismo', 'Novela'],
       portada: 'portada-semana7.jpg'
@@ -729,8 +712,6 @@
       semana: 8,
       titulo: 'Diecinueve garras y un pájaro oscuro',
       autor: 'Agustina Bazterrica',
-      rating: 0,
-      resenas: 0,
       descripcion: 'Libro de cuentos de la escritora argentina, publicado originalmente en 2020 como reedición revisada y ampliada de su obra anterior Antes del encuentro feroz (2016). Sus 19 relatos exploran miedos cotidianos, obsesiones, vínculos oscuros, crueldad y humor negro, con temas como la muerte, el cuerpo, la violencia, las relaciones familiares y los deseos ocultos.',
       tags: ['Cuento', 'Terror', 'Humor negro'],
       portada: 'portada-semana8.jpg'
@@ -743,11 +724,6 @@
 
   const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const currentMonthName = MONTHS_ES[new Date().getMonth()];
-
-  function renderStars(rating){
-    const full = Math.round(rating);
-    return '★'.repeat(full) + '☆'.repeat(5 - full);
-  }
 
   function renderCarousel(){
     const el = document.getElementById('featuredBook');
@@ -763,10 +739,6 @@
           <div class="featured-info">
             <p class="featured-book-title">${escapeHtmlComment(book.titulo)}</p>
             <p class="featured-book-author">por ${escapeHtmlComment(book.autor)}</p>
-            <div class="featured-rating">
-              <span class="stars">${renderStars(book.rating)}</span>
-              <b>${book.rating.toFixed(1)}</b>
-            </div>
             <p class="featured-desc">${escapeHtmlComment(book.descripcion)}</p>
             <div class="featured-tags">
               ${book.tags.map(t => `<span class="featured-tag">${escapeHtmlComment(t)}</span>`).join('')}
