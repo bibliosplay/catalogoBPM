@@ -875,12 +875,21 @@
     return div.innerHTML;
   }
 
+  function normalizeText(str){
+    return (str || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
   function highlight(text, query){
     const safe = escapeHtml(text);
     if(!query) return safe;
-    const idx = safe.toLowerCase().indexOf(query.toLowerCase());
+    const safeNorm = normalizeText(safe);
+    const queryNorm = normalizeText(query);
+    const idx = safeNorm.indexOf(queryNorm);
     if(idx === -1) return safe;
-    return safe.slice(0, idx) + '<mark>' + safe.slice(idx, idx + query.length) + '</mark>' + safe.slice(idx + query.length);
+    return safe.slice(0, idx) + '<mark>' + safe.slice(idx, idx + queryNorm.length) + '</mark>' + safe.slice(idx + queryNorm.length);
   }
 
   async function loadCSV(){
@@ -909,7 +918,12 @@
 
       allData = rows
         .filter(r => r.autor && r.titulo && r.id)
-        .map(r => ({ autor: r.autor.trim(), titulo: r.titulo.trim(), id: r.id.trim() }));
+        .map(r => {
+          const autor = r.autor.trim();
+          const titulo = r.titulo.trim();
+          const id = r.id.trim();
+          return { autor, titulo, id, key: normalizeText(autor + ' ' + titulo + ' ' + id) };
+        });
 
       showPrompt();
     }catch(error){
@@ -953,10 +967,9 @@
       showPrompt();
       return;
     }
-    const q = query.toLowerCase();
+    const qNorm = normalizeText(query);
     currentFiltered = allData.filter(item =>
-      item.autor.toLowerCase().includes(q) ||
-      item.titulo.toLowerCase().includes(q) ||
+      item.key.includes(qNorm) ||
       item.id.includes(query)
     );
     shown = Math.min(PAGE_SIZE, currentFiltered.length);
